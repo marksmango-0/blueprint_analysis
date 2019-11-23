@@ -5,7 +5,7 @@
 			<actions>
 					<do_if value="not $scanned?">
 						<set_value name="$scanned" exact="table[]"/>
-						<set_value name="$scanrequirements" exact="table[{class.ventureplatform} = 1, {class.pier} = 100, {class.dockarea} = 50, {class.production} = 50, {class.storage} = 50, {class.defencemodule} = 50, {class.buildmodule} = 50, {class.connectionmodule} = 50, {class.habitation} = 50, {class.ship_xs} = 30, {class.ship_s} = 40, {class.ship_m} = 60, {class.ship_l} = 85, {class.ship_xl} = 120, {class.turret} = 75, {class.engine} = 75, {class.shieldgenerator} = 75, {class.weapon} = 75 ]" />
+						<set_value name="$scanrequirements" exact="table[{class.ventureplatform} = 1, {class.pier} = 100, {class.dockarea} = 100, {class.production} = 300, {class.storage} = 250, {class.defencemodule} = 150, {class.buildmodule} = 500, {class.connectionmodule} = 75, {class.habitation} = 400, {class.ship_xs} = 30, {class.ship_s} = 50, {class.ship_m} = 75, {class.ship_l} = 150, {class.ship_xl} = 200, {class.turret} = 75, {class.engine} = 75, {class.shieldgenerator} = 75, {class.weapon} = 75 ]" />
 						<set_value name="$basemultiplier" exact="1" />
 						<set_value name="$allwares" exact="lookup.ware.list.count" />
 						<do_all exact="$allwares.count" counter="$i" >
@@ -319,11 +319,30 @@
 						</do_else>
 					</actions>
 				</cue>
-
-				
+				<!-- TODO THIS ABSOLUTELY MUST BE MOVED TO A DIFF OF THIS FILE IN BLUEPRINT EXCHANGE. THE TARGET CUE DOES NOT EXIST WITHOUT THAT MOD -->
+				<cue name="SendScanned" instantiate="true" >
+					<conditions>
+						<event_cue_signalled />
+					</conditions>
+					<actions>
+						<!--<show_notification text="'sending '+ $scanned.keys.count + ' and ' + $scanrequirements" timeout="5s" priority="8"/>-->
+						<signal_cue_instantly cue="md.BlueprintExchange.ReceiveScanned" param="[$scanned, $scanrequirements]" />
+					</actions>
+				</cue>
+				<cue name="ExternalIncrease" instantiate="true">
+					<conditions>
+						<event_cue_signalled />
+					</conditions>
+					<actions>
+						<set_value name="$macro" exact="event.param.{1}" />
+						<set_value name="$increase" exact="event.param.{2}" />
+						<set_value name="$goal" exact="$scanrequirements.{$macro.class}" />
+						<show_notification text="$macro.id + ' analysis mod to increase by '+ $increase'" timeout="5s" priority="8"/>
+						<include_actions ref="UpdateProgress" />
+					</actions>
+				</cue>
 				<library name="UpdateProgress">
 					<actions>
-						<show_notification text=" 'UPDATING'" timeout="5s" priority="8"/>
 						<do_if value="not $macro.ware.tags.indexof.{tag.noplayerblueprint}">
 							<do_if value="not $scanned.{'$'+$macro.id}?">
 								<set_value name="$scanned.{'$'+$macro.id}" exact="table[$name=$macro.name, $objectmacro=$macro, $count=0]"/>
