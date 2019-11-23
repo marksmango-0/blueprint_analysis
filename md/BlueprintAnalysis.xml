@@ -1,0 +1,659 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mdscript name="BlueprintAnalysis" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="md.xsd">
+	<cues>
+		<cue name="InitScanningModule" instantiate="false" namespace="this">
+			<actions>
+					<do_if value="not $scanned?">
+						<set_value name="$scanned" exact="table[]"/>
+						<set_value name="$scanrequirements" exact="table[{class.ventureplatform} = 1, {class.pier} = 100, {class.dockarea} = 50, {class.production} = 50, {class.storage} = 50, {class.defencemodule} = 50, {class.buildmodule} = 50, {class.connectionmodule} = 50, {class.habitation} = 50, {class.ship_xs} = 30, {class.ship_s} = 40, {class.ship_m} = 60, {class.ship_l} = 85, {class.ship_xl} = 120, {class.turret} = 75, {class.engine} = 75, {class.shieldgenerator} = 75, {class.weapon} = 75 ]" />
+						<set_value name="$basemultiplier" exact="1" />
+						<set_value name="$allwares" exact="lookup.ware.list.count" />
+						<do_all exact="$allwares.count" counter="$i" >
+							<set_value name="$ware" exact="$allwares.{$i}" />
+							<do_if value="player.blueprints.{$ware}.any.exists and ($ware.tags.indexof.{tag.module} or $ware.tags.indexof.{tag.ship} or $ware.tags.indexof.{tag.equipment})">
+								<show_notification text="'found existing blueprint ' + $ware.name " timeout="5s" priority="8"/>
+								<set_value name="$macro" exact="$ware.objectmacro" />
+								<set_value name="$increase" exact="$scanrequirements.{$macro.class}" />
+								<set_value name="$goal" exact="$scanrequirements.{$macro.class}" />
+								<include_actions ref="UpdateProgress" /> 
+							</do_if>
+						</do_all>
+					</do_if>
+			</actions>
+			<cues>
+				<cue name="Register_Options_Menu" instantiate="true" namespace="this">
+					<conditions>
+						<event_cue_signalled cue="md.Simple_Menu_API.Reloaded"/>
+					</conditions>
+					<actions>
+						<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+						  param = "table[
+							$id      = 'blueprint_progress_menu',
+							$columns = 7, 
+							$title   = 'Blueprint Progress',
+							$onOpen  = Main_Menu
+							]"/>
+							
+							
+						<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'modulemenu',
+								$columns = 7, 
+								$title   = 'Modules',
+								$onOpen  = Module_Menu,
+								$private = 1,
+							]" />
+							
+						<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'shipmenu',
+								$columns = 7, 
+								$title   = 'Ships',
+								$onOpen  = Ship_Menu,
+								$private = 1,
+							]" />
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'equipmentmenu',
+								$columns = 7, 
+								$title   = 'Equipment',
+								$onOpen  = Equipment_Menu,
+								$private = 1,
+							]" />
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'weaponmenu',
+								$columns = 7, 
+								$title   = 'Weapons',
+								$onOpen  = Weapon_Menu,
+								$private = 1,
+							]" />
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'shieldmenu',
+								$columns = 7, 
+								$title   = 'Shields',
+								$onOpen  = Shield_Menu,
+								$private = 1,
+							]" />
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'enginemenu',
+								$columns = 7, 
+								$title   = 'Engines',
+								$onOpen  = Engine_Menu,
+								$private = 1,
+							]" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'turretmenu',
+								$columns = 7, 
+								$title   = 'Turrets',
+								$onOpen  = Turret_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'buildmodulemenu',
+								$columns = 7, 
+								$title   = 'Build Modules',
+								$onOpen  = Buildmodule_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'connectionmenu',
+								$columns = 7, 
+								$title   = 'Connection Modules',
+								$onOpen  = Connection_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'defencemenu',
+								$columns = 7, 
+								$title   = 'Defence Modules',
+								$onOpen  = Defence_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'dockmenu',
+								$columns = 7, 
+								$title   = 'Dock Modules',
+								$onOpen  = Dock_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'habitationmenu',
+								$columns = 7, 
+								$title   = 'Habitation Modules',
+								$onOpen  = Habitation_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'productionmenu',
+								$columns = 7, 
+								$title   = 'Production Modules',
+								$onOpen  = Production_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'storagemenu',
+								$columns = 7, 
+								$title   = 'Storage Modules',
+								$onOpen  = Storage_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'xsshipmenu',
+								$columns = 7, 
+								$title   = 'XS Ships',
+								$onOpen  = XS_Ship_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'sshipmenu',
+								$columns = 7, 
+								$title   = 'S Ships',
+								$onOpen  = S_Ship_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'mshipmenu',
+								$columns = 7, 
+								$title   = 'M Ships',
+								$onOpen  = M_Ship_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'lshipmenu',
+								$columns = 7, 
+								$title   = 'L Ships',
+								$onOpen  = L_Ship_Menu,
+								$private = 1,
+							]" />
+							
+							<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
+							param = "table[
+								$id      = 'xlshipmenu',
+								$columns = 7, 
+								$title   = 'XL Ships',
+								$onOpen  = XL_Ship_Menu,
+								$private = 1,
+							]" />
+					</actions>
+				</cue>
+				<library name="AddBlueprintRows">
+					<actions>
+						<do_if value="$Value.$count gt 0 or player.blueprints.{$Value.$objectmacro.ware}.any.exists" >
+							<set_value name="$hasentries" exact="true" />
+							<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row" />
+							<set_value name="$Text" exact="$Value.$name" />
+							<set_value name="$Current" exact="$Value.$count" />
+							<set_value name="$Required" exact="$scanrequirements.{$Value.$objectmacro.class}" />
+							<do_if value="player.blueprints.{$Value.$objectmacro.ware}.any.exists" >
+								<set_value name="$ProgressText" exact="'Complete'" />
+							</do_if>
+							<do_else>
+								<set_value name="$ProgressText" exact="$Current + ' / ' + $Required" />
+							</do_else>
+
+							<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+										$col=1,
+										$colSpan=3,
+										$mouseOverText=$Text,
+										$text = $Text,
+										]" />
+							<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+								$col=4,
+								$colSpan=1,
+								$halign='center',
+								$text = $ProgressText,
+								 $color=table[ $r = 200, $g = 200, $b = 200, $a = 100 ],
+								]" />
+							<signal_cue_instantly cue="md.Simple_Menu_API.Make_StatusBar" param="table[
+								$col=5,
+								$colSpan=2,
+								$scaling=true,
+								$type='statusbar',
+								$start   = 0,
+								$current = $Current,
+								$max     = $Required,
+								]" />	
+						</do_if>
+					</actions>				
+				</library>
+				<library name="AddEmptyMessage">
+					<actions>
+						<do_if value="not $hasentries" >
+							<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row" />
+							<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+											$col=1,
+											$colSpan=2,
+											$text = 'No Blueprints Available',
+											]" />
+						</do_if>
+					</actions>
+				</library>
+				
+				<cue name="OnPlayerLearnedBlueprint" instantiate="true">
+					<conditions>
+						<event_player_blueprint_added />
+					</conditions>
+					<actions>
+						<set_value name="$macro" exact="event.param" />
+						<set_value name="$increase" exact="$scanrequirements.{$macro.class}" />
+						<set_value name="$goal" exact="$scanrequirements.{$macro.class}" />
+						<include_actions ref="UpdateProgress" />
+					</actions>
+				</cue>
+				<cue name="OnPlayerScannedObject" instantiate="true">
+					<conditions>
+						<check_all>
+							<event_player_discovered_object />
+							<check_value value="event.param2 gt 0" />
+						</check_all>
+					</conditions>
+					<actions>
+						<set_value name="$parm1" exact = "event.param" />
+						<set_value name="$parm2" exact = "event.param2" />
+						<show_notification text=" event.name + 'object scanned: ' + $parm1.name" timeout="50s" priority="8"/>
+						<do_if value="$parm1.isclass.{[class.pier, class.dockarea, class.production, class.storage, class.defencemodule, class.buildmodule, class.connectionmodule, class.habitation]}">
+							
+							<set_value name="$macro" exact="$parm1.macro" />
+							<set_value name="$increase" exact="$basemultiplier" />
+							<set_value name="$goal" exact="$scanrequirements.{$macro.class}" />
+							
+							<include_actions ref="UpdateProgress" />
+							<include_actions ref="GetBonusScan" />
+
+						</do_if>
+						<do_else>
+							<show_notification text=" $parm1.name + ' is not a valid module'" timeout="5s" priority="8"/>
+						</do_else>
+					</actions>
+				</cue>
+				<cue name="OnPlayerScannedShip" instantiate="true">
+				<!-- add escape if bp already known-->
+					<conditions>
+							<check_any>
+								<check_all>
+									<event_scan_finished scanner="player.ship"/>
+								</check_all>
+							</check_any>
+					</conditions>
+					<actions>
+						<set_value name="$parm1" exact = "event.param" />
+						<show_notification text=" event.name + ' ship scanned: ' + $parm1.name" timeout="5s" priority="8"/>
+						<do_if value="$parm1.isclass.{[class.ship]}">
+						
+							<set_value name="$macro" exact="$parm1.macro" />
+							<set_value name="$increase" exact="$basemultiplier" />
+							<set_value name="$goal" exact="$scanrequirements.{$parm1.macro.class}" />
+							<include_actions ref="UpdateProgress" />
+							
+							<include_actions ref="GetBonusScan" />
+							
+						</do_if>
+						<do_else>
+							<show_notification text=" $parm1.name + ' is not a valid ship'" timeout="5s" priority="8"/>
+						</do_else>
+					</actions>
+				</cue>
+
+				
+				<library name="UpdateProgress">
+					<actions>
+						<show_notification text=" 'UPDATING'" timeout="5s" priority="8"/>
+						<do_if value="not $macro.ware.tags.indexof.{tag.noplayerblueprint}">
+							<do_if value="not $scanned.{'$'+$macro.id}?">
+								<set_value name="$scanned.{'$'+$macro.id}" exact="table[$name=$macro.name, $objectmacro=$macro, $count=0]"/>
+								<show_notification text=" '$'+$macro.name + ' added to list ' + $scanned.{'$'+$macro.id}.$count" timeout="5s" priority="8"/>
+							</do_if>
+							<do_if value=" $scanned.{'$'+$macro.id}.$count lt $goal">
+								<set_value name="$scanned.{'$'+$macro.id}.$count" exact="$increase" operation="add" />
+								<show_notification text=" $scanned.{'$'+$macro.id}.$name + ' updated to ' + $scanned.{'$'+$macro.id}.$count" timeout="5s" priority="8"/>
+								<do_if value="$scanned.{'$'+$macro.id}.$count gt $goal" >
+									<add_blueprints macros="$macro" />
+								</do_if>
+							</do_if>
+						</do_if>
+					</actions>
+				</library>
+				<library name="GetBonusScan">
+					<actions>
+						<set_value name="$scannedobject" exact="$parm1" />
+						<set_value name="$macro" exact="$parm1.macro" />
+						<set_value name="$increase" exact="$basemultiplier" />
+						<set_value name="$goal" exact="$scanrequirements.{$parm1.macro.class}" />
+						<set_value name="$found_equipment" value="[]" />
+						<find_object_component groupname="$found_equipment" class="[class.engine, class.turret, class.shieldgenerator, class.weapon]" object="$scannedobject" multiple="true"/>
+						<do_any chance="5">
+							<do_all weight="5">
+								
+								<set_value name="$macro" exact="$found_equipment.random.macro" />
+								<include_actions ref="UpdateProgress" />
+							</do_all>
+							<do_all weight="95">
+								<show_notification text="'no bonus macro selected'" timeout="5s" priority="8"/>
+							</do_all>
+						</do_any>
+					</actions>
+				</library>
+
+				<cue name="Main_Menu" instantiate="true">
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Modules', $id='modulemenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Ships', $id='shipmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Equipment', $id='equipmentmenu']" />
+					</actions>
+				</cue>
+				
+				<cue name="Module_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Build Modules', $id='buildmodulemenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Connection Modules', $id='connectionmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Defence Modules', $id='defencemenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Dock Modules', $id='dockmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Habitation Modules', $id='habitationmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Production Modules', $id='productionmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Storage Modules', $id='storagemenu']" />
+					</actions>
+				</cue>
+				<cue name="Ship_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='XS Ships', $id='xsshipmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='S Ships', $id='sshipmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='M Ships', $id='mshipmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='L Ships', $id='lshipmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='XL Ships', $id='xlshipmenu']" />
+
+					</actions>
+				</cue>
+				<cue name="Equipment_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Weapons', $id='weaponmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Shields', $id='shieldmenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Engines', $id='enginemenu']" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text='Turrets', $id='turretmenu']" />
+					</actions>
+				</cue>
+				
+				<cue name="Buildmodule_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<show_notification text=" $Value + ' ' + $Value.$objectmacro" timeout="5s" priority="8"/>
+							<do_if value="$Value.$objectmacro.isclass.{[class.buildmodule]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="Connection_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.connectionmodule]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="Defence_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.defencemodule]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="Dock_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<show_notification text=" $scanned.keys.count + ' entries in $scanned '" timeout="5s" priority="8"/>
+							<show_notification text=" $Value + ' ' + $Value.$objectmacro" timeout="5s" priority="8"/>
+							<do_if value="$Value.$objectmacro.isclass.{[class.pier, class.dockarea]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="Habitation_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.habitation]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="Production_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.production]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="Storage_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.storage]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				
+				<cue name="XS_Ship_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.ship_xs]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="S_Ship_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.ship_s]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="M_Ship_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+					<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.ship_m]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="L_Ship_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.ship_l]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="XL_Ship_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.ship_xl]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				
+				<cue name="Weapon_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.weapon]} and not $Value.$objectmacro.isclass.{[class.turret]} and not $Value.$objectmacro.isclass.{[class.missile]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="Shield_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.shieldgenerator]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="Engine_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.engine]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="Turret_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<set_value name="$hasentries" exact="false" />
+						<do_for_each in="$scanned" valuename="$Value">
+							<do_if value="$Value.$objectmacro.isclass.{[class.turret]}">
+								<include_actions ref="AddBlueprintRows" />
+							</do_if>
+						</do_for_each>
+						<include_actions ref="AddEmptyMessage" />
+					</actions>
+				</cue>
+				<cue name="Missile_Menu" instantiate="true" >
+					<conditions>
+						<event_cue_signalled/>
+					</conditions>
+					<actions>
+						<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row" />
+						<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+												$col=1,
+												$mouseOverText='submenu',
+												$text = 'submenu',
+												]" />
+					</actions>
+				</cue>
+				
+			</cues>
+		</cue>
+	</cues>
+</mdscript>
