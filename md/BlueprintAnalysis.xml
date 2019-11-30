@@ -7,11 +7,11 @@
 						<set_value name="$scanned" exact="table[]"/>
 						<set_value name="$scanrequirements" exact="table[{class.ventureplatform} = 1, {class.pier} = 100, {class.dockarea} = 100, {class.production} = 300, {class.storage} = 250, {class.defencemodule} = 150, {class.buildmodule} = 500, {class.connectionmodule} = 75, {class.habitation} = 400, {class.ship_xs} = 30, {class.ship_s} = 50, {class.ship_m} = 75, {class.ship_l} = 150, {class.ship_xl} = 200, {class.turret} = 75, {class.engine} = 75, {class.shieldgenerator} = 75, {class.weapon} = 75 ]" />
 						<set_value name="$basemultiplier" exact="1" />
-						<set_value name="$allwares" exact="lookup.ware.list.count" />
+						<set_value name="$allwares" exact="lookup.ware.list" />
 						<do_all exact="$allwares.count" counter="$i" >
 							<set_value name="$ware" exact="$allwares.{$i}" />
 							<do_if value="player.blueprints.{$ware}.any.exists and ($ware.tags.indexof.{tag.module} or $ware.tags.indexof.{tag.ship} or $ware.tags.indexof.{tag.equipment})">
-								<show_notification text="'found existing blueprint ' + $ware.name " timeout="5s" priority="8"/>
+								<!--<show_notification text="'found existing blueprint ' + $ware.name " timeout="5s" priority="8"/>-->
 								<set_value name="$macro" exact="$ware.objectmacro" />
 								<set_value name="$increase" exact="$scanrequirements.{$macro.class}" />
 								<set_value name="$goal" exact="$scanrequirements.{$macro.class}" />
@@ -26,13 +26,7 @@
 						<event_cue_signalled cue="md.Simple_Menu_API.Reloaded"/>
 					</conditions>
 					<actions>
-						<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
-						  param = "table[
-							$id      = 'blueprint_progress_menu',
-							$columns = 7, 
-							$title   = 'Blueprint Progress',
-							$onOpen  = Main_Menu
-							]"/>
+						<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu" param = "table[$id = 'blueprint_progress_menu', $columns = 7, $title   = 'Blueprint Progress', $onOpen  = Main_Menu ]"/>
 							
 							
 						<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
@@ -246,11 +240,7 @@
 					<actions>
 						<do_if value="not $hasentries" >
 							<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row" />
-							<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
-											$col=1,
-											$colSpan=2,
-											$text = 'No Blueprints Available',
-											]" />
+							<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[$col=1, $colSpan=2, $text = 'No Blueprints Available', ]" />
 						</do_if>
 					</actions>
 				</library>
@@ -258,6 +248,7 @@
 				<cue name="OnPlayerLearnedBlueprint" instantiate="true">
 					<conditions>
 						<event_player_blueprint_added />
+						<check_value value="event.param" />
 					</conditions>
 					<actions>
 						<set_value name="$macro" exact="event.param" />
@@ -276,7 +267,6 @@
 					<actions>
 						<set_value name="$parm1" exact = "event.param" />
 						<set_value name="$parm2" exact = "event.param2" />
-						<show_notification text=" event.name + 'object scanned: ' + $parm1.name" timeout="50s" priority="8"/>
 						<do_if value="$parm1.isclass.{[class.pier, class.dockarea, class.production, class.storage, class.defencemodule, class.buildmodule, class.connectionmodule, class.habitation]}">
 							
 							<set_value name="$macro" exact="$parm1.macro" />
@@ -325,7 +315,6 @@
 						<event_cue_signalled />
 					</conditions>
 					<actions>
-						<!--<show_notification text="'sending '+ $scanned.keys.count + ' and ' + $scanrequirements" timeout="5s" priority="8"/>-->
 						<signal_cue_instantly cue="md.BlueprintExchange.ReceiveScanned" param="[$scanned, $scanrequirements]" />
 					</actions>
 				</cue>
@@ -337,13 +326,13 @@
 						<set_value name="$macro" exact="event.param.{1}" />
 						<set_value name="$increase" exact="event.param.{2}" />
 						<set_value name="$goal" exact="$scanrequirements.{$macro.class}" />
-						<show_notification text="$macro.id + ' analysis mod to increase by '+ $increase'" timeout="5s" priority="8"/>
+						<show_notification text="$macro.id + ' analysis mod to increase by '+ $increase" timeout="5s" priority="8"/>
 						<include_actions ref="UpdateProgress" />
 					</actions>
 				</cue>
 				<library name="UpdateProgress">
 					<actions>
-						<do_if value="not $macro.ware.tags.indexof.{tag.noplayerblueprint}">
+						<do_if value="not $macro.ware.tags.indexof.{tag.noplayerblueprint} and $macro.id">
 							<do_if value="not $scanned.{'$'+$macro.id}?">
 								<set_value name="$scanned.{'$'+$macro.id}" exact="table[$name=$macro.name, $objectmacro=$macro, $count=0]"/>
 								<show_notification text=" '$'+$macro.name + ' added to list ' + $scanned.{'$'+$macro.id}.$count" timeout="5s" priority="8"/>
@@ -436,7 +425,6 @@
 					<actions>
 						<set_value name="$hasentries" exact="false" />
 						<do_for_each in="$scanned" valuename="$Value">
-							<show_notification text=" $Value + ' ' + $Value.$objectmacro" timeout="5s" priority="8"/>
 							<do_if value="$Value.$objectmacro.isclass.{[class.buildmodule]}">
 								<include_actions ref="AddBlueprintRows" />
 							</do_if>
@@ -479,8 +467,6 @@
 					<actions>
 						<set_value name="$hasentries" exact="false" />
 						<do_for_each in="$scanned" valuename="$Value">
-							<show_notification text=" $scanned.keys.count + ' entries in $scanned '" timeout="5s" priority="8"/>
-							<show_notification text=" $Value + ' ' + $Value.$objectmacro" timeout="5s" priority="8"/>
 							<do_if value="$Value.$objectmacro.isclass.{[class.pier, class.dockarea]}">
 								<include_actions ref="AddBlueprintRows" />
 							</do_if>
