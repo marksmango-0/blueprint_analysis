@@ -27,7 +27,7 @@
 					</conditions>
 					<actions>
 						<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu" param = "table[$id = 'blueprint_progress_menu', $columns = 7, $title   = 'Blueprint Progress', $onOpen  = Main_Menu ]"/>
-							
+						<!--<show_notification text="'menu opened' " timeout="5s" priority="8"/>-->
 							
 						<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu"
 							param = "table[
@@ -267,6 +267,7 @@
 					<actions>
 						<set_value name="$parm1" exact = "event.param" />
 						<set_value name="$parm2" exact = "event.param2" />
+						<!--<show_notification text=" $parm1.name + ' scanned as object'" timeout="5s" priority="8"/>-->
 						<do_if value="$parm1.isclass.{[class.pier, class.dockarea, class.production, class.storage, class.defencemodule, class.buildmodule, class.connectionmodule, class.habitation]}">
 							
 							<set_value name="$macro" exact="$parm1.macro" />
@@ -278,7 +279,7 @@
 
 						</do_if>
 						<do_else>
-							<show_notification text=" $parm1.name + ' is not a valid module'" timeout="5s" priority="8"/>
+							<!--<show_notification text=" $parm1.name + ' is not a valid module'" timeout="5s" priority="8"/>-->
 						</do_else>
 					</actions>
 				</cue>
@@ -293,7 +294,6 @@
 					</conditions>
 					<actions>
 						<set_value name="$parm1" exact = "event.param" />
-						<show_notification text=" event.name + ' ship scanned: ' + $parm1.name" timeout="5s" priority="8"/>
 						<do_if value="$parm1.isclass.{[class.ship]}">
 						
 							<set_value name="$macro" exact="$parm1.macro" />
@@ -305,7 +305,7 @@
 							
 						</do_if>
 						<do_else>
-							<show_notification text=" $parm1.name + ' is not a valid ship'" timeout="5s" priority="8"/>
+							<!--<show_notification text=" $parm1.name + ' is not a valid ship'" timeout="5s" priority="8"/>-->
 						</do_else>
 					</actions>
 				</cue>
@@ -326,7 +326,7 @@
 						<set_value name="$macro" exact="event.param.{1}" />
 						<set_value name="$increase" exact="event.param.{2}" />
 						<set_value name="$goal" exact="$scanrequirements.{$macro.class}" />
-						<show_notification text="$macro.id + ' analysis mod to increase by '+ $increase" timeout="5s" priority="8"/>
+						<!--<show_notification text="$macro.id + ' analysis mod to increase by '+ $increase" timeout="5s" priority="8"/>-->
 						<include_actions ref="UpdateProgress" />
 					</actions>
 				</cue>
@@ -335,11 +335,11 @@
 						<do_if value="not $macro.ware.tags.indexof.{tag.noplayerblueprint} and $macro.id">
 							<do_if value="not $scanned.{'$'+$macro.id}?">
 								<set_value name="$scanned.{'$'+$macro.id}" exact="table[$name=$macro.name, $objectmacro=$macro, $count=0]"/>
-								<show_notification text=" '$'+$macro.name + ' added to list ' + $scanned.{'$'+$macro.id}.$count" timeout="5s" priority="8"/>
+								<!--<show_notification text=" '$'+$macro.name + ' added to list ' + $scanned.{'$'+$macro.id}.$count" timeout="5s" priority="8"/>-->
 							</do_if>
 							<do_if value=" $scanned.{'$'+$macro.id}.$count lt $goal">
 								<set_value name="$scanned.{'$'+$macro.id}.$count" exact="$increase" operation="add" />
-								<show_notification text=" $scanned.{'$'+$macro.id}.$name + ' updated to ' + $scanned.{'$'+$macro.id}.$count" timeout="5s" priority="8"/>
+								<!--<show_notification text=" $scanned.{'$'+$macro.id}.$name + ' updated to ' + $scanned.{'$'+$macro.id}.$count" timeout="5s" priority="8"/>-->
 								<do_if value="$scanned.{'$'+$macro.id}.$count gt $goal" >
 									<add_blueprints macros="$macro" />
 								</do_if>
@@ -355,16 +355,19 @@
 						<set_value name="$goal" exact="$scanrequirements.{$parm1.macro.class}" />
 						<set_value name="$found_equipment" value="[]" />
 						<find_object_component groupname="$found_equipment" class="[class.engine, class.turret, class.shieldgenerator, class.weapon]" object="$scannedobject" multiple="true"/>
-						<do_any chance="5">
-							<do_all weight="5">
-								
-								<set_value name="$macro" exact="$found_equipment.random.macro" />
-								<include_actions ref="UpdateProgress" />
-							</do_all>
-							<do_all weight="95">
-								<show_notification text="'no bonus macro selected'" timeout="5s" priority="8"/>
-							</do_all>
-						</do_any>
+						<do_if value="$found_equipment.count" >
+							<do_any>
+								<do_all weight="25">
+									<set_value name="$macro" exact="$found_equipment.random.macro" />
+									<include_actions ref="UpdateProgress" />
+									<play_sound sound="'notification_unlocked_hack'" object="player.entity" />
+									
+								</do_all>
+								<do_all weight="75">
+									<!--<show_notification text="'no bonus macro selected'" timeout="5s" priority="8"/>-->
+								</do_all>
+							</do_any>
+						</do_if>
 					</actions>
 				</library>
 
