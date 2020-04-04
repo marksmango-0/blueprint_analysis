@@ -340,7 +340,7 @@
 							<do_if value=" $scanned.{'$'+$macro.id}.$count lt $goal">
 								<set_value name="$scanned.{'$'+$macro.id}.$count" exact="$increase" operation="add" />
 								<!--<show_notification text=" $scanned.{'$'+$macro.id}.$name + ' updated to ' + $scanned.{'$'+$macro.id}.$count" timeout="5s" priority="8"/>-->
-								<do_if value="$scanned.{'$'+$macro.id}.$count gt $goal" >
+								<do_if value="$scanned.{'$'+$macro.id}.$count ge $goal" >
 									<add_blueprints macros="$macro" />
 								</do_if>
 							</do_if>
